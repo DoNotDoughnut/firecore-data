@@ -61,7 +61,7 @@ pub fn save_struct<P: AsRef<std::path::Path>>(path: P, data: &impl serde::Serial
 
     #[cfg(target_arch = "wasm32")]
     {
-        if let Some(fname) = path.as_ref().file_name() {
+        if let Some(fname) = path.as_ref().file_stem() {
             match ron::to_string(&data) {
                 Ok(string) => miniquad_cookie::set_cookie(&fname.to_string_lossy(), &string),
                 Err(err) => warn!("Could not encode cookie with error: {}", err),
@@ -83,7 +83,7 @@ pub async fn read_string<P: AsRef<std::path::Path>>(path: P) -> Result<String, E
     }
     #[cfg(target_arch = "wasm32")]
     {
-        match path.as_ref().file_name() {
+        match path.as_ref().file_stem() {
             Some(fname) => return Ok(miniquad_cookie::get_cookie(&fname.to_string_lossy())),
             None => return Err(Error::NoFileName),
         }
