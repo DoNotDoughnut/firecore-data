@@ -5,6 +5,11 @@ pub mod error;
 pub mod data;
 pub mod configuration;
 
+#[test]
+fn main() {
+    println!("Test");
+}
+
 lazy_static::lazy_static! {
 	pub static ref DATA_DIR: Option<directories_next::ProjectDirs> = directories_next::ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
 }

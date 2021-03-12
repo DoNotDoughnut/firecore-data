@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub enum Error {
 
+    NoFileName,
     ReadOnly,
     IOError(std::io::Error),
     FileError(macroquad::file::FileError),

@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use macroquad::prelude::warn;
 
+use crate::error::Error;
+
 #[async_trait::async_trait(?Send)]
 pub trait PersistantData {
 
@@ -71,7 +73,7 @@ pub fn save_struct<P: AsRef<std::path::Path>>(path: P, data: &impl serde::Serial
 
 }
 
-pub async fn read_string<P: AsRef<std::path::Path>>(path: P) -> Result<String, crate::error::Error> {
+pub async fn read_string<P: AsRef<std::path::Path>>(path: P) -> Result<String, Error> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         match crate::get_save_dir() {
@@ -83,7 +85,7 @@ pub async fn read_string<P: AsRef<std::path::Path>>(path: P) -> Result<String, c
     {
         match path.as_ref().file_name() {
             Some(fname) => return Ok(miniquad_cookie::get_cookie(&fname.to_string_lossy())),
-            None => return Err(Error::msg("Could not get filename from path!")),
+            None => return Err(Error::NoFileName),
         }
     }
 }
