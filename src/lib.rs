@@ -1,17 +1,30 @@
 use std::path::PathBuf;
 
-pub mod error;
+use directories_next::ProjectDirs;
 
 pub mod data;
-pub mod configuration;
+pub mod error;
 
-#[test]
-fn main() {
-    println!("Test");
-}
+pub mod configuration;
+pub mod saves;
 
 lazy_static::lazy_static! {
-	pub static ref DATA_DIR: Option<directories_next::ProjectDirs> = directories_next::ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
+	pub static ref DATA_DIR: Option<ProjectDirs> = ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
+}
+
+pub async fn load() {
+
+    use macroquad::prelude::collections::storage;
+    use data::PersistantDataLocation;
+
+    let config = configuration::Configuration::load_from_file().await;
+
+    storage::store(config);
+
+    let saves = firecore_data_lib::player::list::PlayerSaves::load_from_file().await;
+
+    storage::store(saves);
+
 }
 
 pub fn get_save_dir() -> Result<PathBuf, error::Error> {

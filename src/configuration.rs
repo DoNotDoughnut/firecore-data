@@ -1,15 +1,15 @@
+use macroquad::prelude::{info, warn};
 use std::path::PathBuf;
-use async_trait::async_trait;
-use macroquad::prelude::info;
-use macroquad::prelude::warn;
 use serde::{Serialize, Deserialize};
 use crate::data::PersistantData;
 use crate::data::PersistantDataLocation;
 use ahash::AHashMap as HashMap;
 use firecore_input::Control;
 
-static CONFIGURATION_PATH: &str = "config";
-static CONFIGURATION_FILENAME: &str = "config.ron";
+use async_trait::async_trait;
+
+const CONFIGURATION_PATH: &str = "config";
+const CONFIGURATION_FILENAME: &str = "config.ron";
 
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
