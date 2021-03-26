@@ -4,6 +4,9 @@ use macroquad::prelude::warn;
 
 use crate::error::Error;
 
+pub mod configuration;
+pub mod saves;
+
 #[async_trait::async_trait(?Send)]
 pub trait PersistantData {
 
