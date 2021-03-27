@@ -25,7 +25,7 @@ ron = "0.6"
 
 directories-next = "2.0"
 miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }
-macroquad = { git = "https://github.com/not-fl3/macroquad" } # Also game engine
+macroquad = "0.3.0-alpha.17" # Also game engine
 
 ### Other
 
