@@ -11,7 +11,7 @@ const CONFIGURATION_FILENAME: &str = "config.ron";
 
 pub fn on_reload(config: &Configuration) {
 	info!("Running configuration reload tasks...");
-	*firecore_input::keyboard::KEY_CONTROLS.write() = firecore_input::keyboard::serialization::normal_map(&config.controls);
+	firecore_input::load(firecore_input::keyboard::serialization::normal_map(&config.controls));
 	info!("Finished configuration reload tasks!");
 }
 
