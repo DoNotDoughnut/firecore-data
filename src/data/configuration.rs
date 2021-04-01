@@ -11,7 +11,8 @@ const CONFIGURATION_FILENAME: &str = "config.ron";
 
 pub fn on_reload(config: &Configuration) {
 	info!("Running configuration reload tasks...");
-	firecore_input::load(firecore_input::keyboard::serialization::normal_map(&config.controls));
+	firecore_input::keyboard::load(firecore_input::keyboard::serialization::normal_map(&config.controls));
+	firecore_input::touchscreen::touchscreen(config.touchscreen);
 	info!("Finished configuration reload tasks!");
 }
 
@@ -29,7 +30,7 @@ fn default_path() -> PathBuf {
 fn config_default() -> Configuration {
 	Configuration {
 		controls: firecore_input::keyboard::serialization::ser_map(firecore_input::keyboard::default()),
-		// touchscreen: false,
+		touchscreen: false,
 	}
 }
 
@@ -46,13 +47,19 @@ impl PersistantDataLocation for Configuration {
 impl PersistantData for Configuration {
 
 	async fn load(path: PathBuf) -> Self {
-		return match crate::data::read_string(path).await {
-			Ok(content) => ron::from_str(&content).unwrap_or(saved_default()),
+		match crate::data::read_string(path).await {
+			Ok(content) => match ron::from_str(&content) {
+			    Ok(configuration) => configuration,
+			    Err(err) => {
+					warn!("Could not deserialize configuration with error {}", err);
+					saved_default()
+				}
+			},
 			Err(err) => {
 				warn!("Failed reading configuration file to string with error {}", err);
 				saved_default()
 			}
-		};
+		}
 	}
 
 	fn save(&self) {
