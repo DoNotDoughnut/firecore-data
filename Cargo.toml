@@ -1,6 +1,6 @@
 [package]
 name = "firecore-data"
-version = "0.3.0-beta.1"
+version = "0.3.0"
 authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
 edition = "2018"
 
@@ -10,8 +10,8 @@ edition = "2018"
 
 ### Specifications
 
-firecore-data-lib = { git = "https://github.com/DoNotDoughnut/firecore-data-lib" }
-#firecore-data-lib = { path = "../firecore-data-lib" }
+firecore-saves = { git = "https://github.com/DoNotDoughnut/firecore-saves" }
+#firecore-saves = { path = "../firecore-saves" }
 
 firecore-input = { git = "https://github.com/DoNotDoughnut/firecore-input" }
 #firecore-input = { path = "../firecore-input" }
@@ -23,17 +23,9 @@ ron = "0.6"
 
 ### File management
 
-directories-next = "2.0"
+directories-next = "2.0" # replace with dirs-next
 miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }
 
 ### Game engine used for loading files
 
 macroquad = { git = "https://github.com/DoNotDoughnut/macroquad" }
-
-### Other
-
-ahash = { version = "0.7", features = ["serde"] }
-
-#lazy_static = "1.4"
-
-async-trait = "0.1"
