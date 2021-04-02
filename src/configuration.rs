@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use firecore_input::KeyMap;
+use firecore_input::keyboard::{KeyMap, default_key_map};
 
 use firecore_saves::PersistantData;
 
@@ -18,7 +18,7 @@ pub struct Configuration {
 impl Default for Configuration {
     fn default() -> Self {
         Self {
-			controls: firecore_input::keyboard::default(),
+			controls: default_key_map(),
 			touchscreen: false,
 		}
     }
