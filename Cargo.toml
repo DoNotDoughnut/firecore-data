@@ -21,11 +21,14 @@ firecore-input = { git = "https://github.com/DoNotDoughnut/firecore-input" }
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.6"
 
-### File management
-
-directories-next = "2.0" # replace with dirs-next
-miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }
-
 ### Game engine used for loading files
 
 macroquad = { git = "https://github.com/DoNotDoughnut/macroquad" }
+
+### File management
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+directories-next = "2.0" # replace with dirs-next
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }

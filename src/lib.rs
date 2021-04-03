@@ -1,8 +1,7 @@
-use std::path::{Path, PathBuf};
-use directories_next::ProjectDirs;
+use std::path::Path;
+use std::sync::atomic::AtomicBool;
 use error::DataError;
 use macroquad::prelude::{warn, info};
-
 
 pub use macroquad::prelude::collections::storage::{get, get_mut};
 pub use firecore_saves::*;
@@ -11,6 +10,8 @@ pub mod configuration;
 
 pub mod error;
 pub mod reload;
+
+pub static DIRTY: AtomicBool = AtomicBool::new(false); // if true, save player data
 
 pub async fn store() {
     store_data::<configuration::Configuration>("configuration").await;
@@ -97,7 +98,7 @@ pub fn save<D: PersistantData>(data: &D) -> Result<(), DataError> {
                 Err(err) => Err(DataError::Serialize(err)),
             }
         } else {
-            Err(DataError::NoDirectory)
+            Err(DataError::NoFileName)
         }
     }
 }
@@ -108,11 +109,12 @@ pub async fn reload<D: reload::Reloadable + Sized>(data: &mut D) -> Result<(), D
     Ok(())
 }
 
-pub fn directory() -> Result<PathBuf, DataError> {
+#[cfg(not(target_arch = "wasm32"))]
+pub fn directory() -> Result<std::path::PathBuf, DataError> {
 
-    let data_dir = ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
+    let data_dir = directories_next::ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
 
-    let path = data_dir.as_ref().map(|dir| PathBuf::from(dir.data_dir()));
+    let path = data_dir.as_ref().map(|dir| std::path::PathBuf::from(dir.data_dir()));
     if let Some(real_path) = path.as_ref() {
         if let Ok(metadata) = std::fs::metadata(real_path) {
             if !metadata.permissions().readonly() {
