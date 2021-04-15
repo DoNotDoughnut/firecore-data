@@ -1,24 +1,15 @@
 [package]
 name = "firecore-data"
-version = "0.3.0"
+version = "0.4.0-beta.1"
 authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme = "README.md"
 
 [dependencies]
 
-### Specifications
-
-firecore-saves = { git = "https://github.com/DoNotDoughnut/firecore-saves" }
-#firecore-saves = { path = "../firecore-saves" }
-
-firecore-input = { git = "https://github.com/DoNotDoughnut/firecore-input" }
-#firecore-input = { path = "../firecore-input" }
-
 ### Serialization
 
-serde = { version = "1.0", features = ["derive"] }
+serde = "1.0"
 ron = "0.6"
 
 ### Game engine used for loading files
@@ -28,7 +19,14 @@ macroquad = { git = "https://github.com/DoNotDoughnut/macroquad" }
 ### File management
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-directories-next = "2.0" # replace with dirs-next
+dirs-next = "2.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }
+
+[workspace]
+members = [
+    "configuration",
+    "saves",
+    "storage"
+]

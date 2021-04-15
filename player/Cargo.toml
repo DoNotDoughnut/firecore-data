@@ -1,0 +1,28 @@
+[package]
+name = "firecore-saves"
+version = "0.4.0-beta.1"
+authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
+edition = "2018"
+
+[features]
+default = ["firecore-data"]
+
+[dependencies]
+
+### Specifications
+
+firecore-data = { path = "../", optional = true }
+
+firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
+#firecore-util = { path = "../firecore-util" }
+
+firecore-pokedex-lib = { git = "https://github.com/DoNotDoughnut/firecore-pokedex-lib" }
+#firecore-pokedex-lib = { path = "../firecore-pokedex-lib" }
+
+### Serialization
+
+serde = { version = "1.0", features = ["derive"] }
+
+### Collections
+
+ahash = { version = "0.7", features = ["serde"] }

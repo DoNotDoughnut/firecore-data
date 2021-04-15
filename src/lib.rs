@@ -1,72 +1,87 @@
-use std::path::Path;
+pub extern crate macroquad;
+
 use std::sync::atomic::AtomicBool;
 use error::DataError;
-use macroquad::prelude::{warn, info};
+use macroquad::prelude::{
+    warn, info,
+    collections::storage::store as mqstore
+};
+use serde::{Serialize, de::DeserializeOwned};
 
 pub use macroquad::prelude::collections::storage::{get, get_mut};
-pub use firecore_saves::*;
-
-pub mod configuration;
 
 pub mod error;
 pub mod reload;
 
+// To - do: miniquad-cookie produces cookies that dont throw samesite errors
+
+const DIR1: &str = "rhysholloway"; // To - do: Custom specifiers for directories
+const DIR2: &str = "pokemon-firered-clone";
+const EXTENSION: &str = "ron";
+
+// To - do: move this to firecore-game crate
 pub static DIRTY: AtomicBool = AtomicBool::new(false); // if true, save player data
 
-pub async fn store() {
-    store_data::<configuration::Configuration>("configuration").await;
-    store_data::<player::PlayerSaves>("player saves").await;
+pub trait PersistantData: Serialize + DeserializeOwned + Default {
+
+    fn file_name() -> &'static str;
+
 }
 
-async fn store_data<D: PersistantData + Sized + 'static>(name: &str) {
+pub trait Reloadable: PersistantData {
+
+    fn on_reload(&self);
+
+}
+
+pub async fn store<D: PersistantData + Sized + 'static>() {
     match load::<D>().await {
-        Ok(data) => macroquad::prelude::collections::storage::store(data),
+        Ok(data) => mqstore(data),
         Err(err) => {
+            let name = std::any::type_name::<D>();
+            let name = name.split("::").last().unwrap_or(name);
             warn!("Could not load {} with error {}", name, err);
             info!("Saving a new {} file!", name);
             let data = D::default();
             if let Err(err) = save(&data) {
                 warn!("Could not save new {} with error {}", name, err);
             }
-            macroquad::prelude::collections::storage::store(data);
+            mqstore(data);
         }
     }
 }
 
 pub async fn load<D: PersistantData + Sized>() -> Result<D, DataError> {
-    let path = Path::new(D::path());
+    let filename = D::file_name();
     #[cfg(not(target_arch = "wasm32"))]
     let string = {
         match crate::directory() {
             Ok(dir) => Ok(
-                (
-                    *String::from_utf8_lossy(
-                        &macroquad::prelude::load_file(
-                            &*dir.join(path).to_string_lossy()
-                        ).await?
-                    )
-                ).to_owned()
+                macroquad::prelude::load_string(
+                    &*dir.join(file_name(filename)).to_string_lossy()
+                ).await?
             ),
             Err(err) => Err(err),
         }      
     }?;
     #[cfg(target_arch = "wasm32")]
     let string = {
-        match path.file_stem() {
-            Some(fname) => Ok(miniquad_cookie::get_cookie(&fname.to_string_lossy())),
+        match path.split('.').next() {
+            Some(fname) => Ok(miniquad_cookie::get_cookie(fname)),
             None => Err(DataError::NoFileName),
         }
     }?;
-    let data: D = ron::from_str(&string).map_err(|error| DataError::Deserialize(D::path(), error))?;
+    let data: D = ron::from_str(&string).map_err(|error| DataError::Deserialize(filename, error))?;
     Ok(data)
 }
 
 pub fn save<D: PersistantData>(data: &D) -> Result<(), DataError> {
+    let filename = D::file_name();
     #[cfg(not(target_arch = "wasm32"))]
     {
         if let Ok(dir) = crate::directory() {
 
-            let path = dir.join(D::path());
+            let path = dir.join(file_name(filename));
 
             if let Some(parent) = path.parent() {
                 if !parent.exists() {
@@ -89,21 +104,17 @@ pub fn save<D: PersistantData>(data: &D) -> Result<(), DataError> {
 
     #[cfg(target_arch = "wasm32")]
     {
-        if let Some(fname) = Path::new(D::path()).file_stem() {
-            match ron::to_string(&data) {
-                Ok(string) => {
-                    miniquad_cookie::set_cookie(&fname.to_string_lossy(), &string);
-                    Ok(())
-                },
-                Err(err) => Err(DataError::Serialize(err)),
-            }
-        } else {
-            Err(DataError::NoFileName)
+        match ron::to_string(&data) {
+            Ok(string) => {
+                miniquad_cookie::set_cookie(filename, &string);
+                Ok(())
+            },
+            Err(err) => Err(DataError::Serialize(err)),
         }
     }
 }
 
-pub async fn reload<D: reload::Reloadable + Sized>(data: &mut D) -> Result<(), DataError> {
+pub async fn reload<D: Reloadable + Sized>(data: &mut D) -> Result<(), DataError> {
     *data = load::<D>().await?;
     data.on_reload();
     Ok(())
@@ -112,21 +123,34 @@ pub async fn reload<D: reload::Reloadable + Sized>(data: &mut D) -> Result<(), D
 #[cfg(not(target_arch = "wasm32"))]
 pub fn directory() -> Result<std::path::PathBuf, DataError> {
 
-    let data_dir = directories_next::ProjectDirs::from("net", "rhysholloway", "pokemon-firered-clone");
-
-    let path = data_dir.as_ref().map(|dir| std::path::PathBuf::from(dir.data_dir()));
-    if let Some(real_path) = path.as_ref() {
-        if let Ok(metadata) = std::fs::metadata(real_path) {
-            if !metadata.permissions().readonly() {
-                return path.ok_or(DataError::ReadOnly);
-            }
-        } else {
-            if !real_path.exists() {
-                if let Ok(()) = std::fs::create_dir_all(real_path) {
-                    return directory();
+    match dirs_next::data_dir() {
+        Some(data_dir) => {
+            let dir = data_dir.join(DIR1).join(DIR2);
+            if let Ok(metadata) = std::fs::metadata(&dir) {
+                if !metadata.permissions().readonly() {
+                    Ok(dir)
+                } else {
+                    Err(DataError::ReadOnly)
+                }
+            } else {
+                if !dir.exists() {
+                    if let Ok(()) = std::fs::create_dir_all(&dir) {
+                        directory()
+                    } else {
+                        Ok(dir)
+                    }
+                } else {
+                    Ok(dir)
                 }
             }
         }
+        None => {
+            std::env::current_dir().map_err(|err| DataError::IOError(err))
+        }
     }
-    std::env::current_dir().map_err(|err| DataError::IOError(err))
+    
+}
+
+pub(crate) fn file_name(filename: &str) -> String {
+    filename.to_owned() + "." + EXTENSION
 }
