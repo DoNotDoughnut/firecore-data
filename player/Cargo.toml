@@ -13,7 +13,7 @@ default = ["firecore-data"]
 
 firecore-data = { path = "../", optional = true }
 
-firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util", features = ["hash"] }
+firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util", features = ["hash", "tinystr"] }
 # firecore-util = { path = "../firecore-util", default-features = false, features = ["hash"] }
 
 firecore-pokedex-lib = { git = "https://github.com/DoNotDoughnut/firecore-pokedex", package = "firecore-pokedex-lib" }

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use ahash::{AHashMap as HashMap, AHashSet as HashSet};
+use firecore_util::hash::{HashMap, HashSet};
 
 use self::map::MapData;
 

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use ahash::{AHashSet as HashSet, AHashMap as HashMap};
+use firecore_util::hash::{HashMap, HashSet};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct MapData {
