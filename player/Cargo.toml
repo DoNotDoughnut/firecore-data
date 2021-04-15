@@ -13,16 +13,10 @@ default = ["firecore-data"]
 
 firecore-data = { path = "../", optional = true }
 
-firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
-#firecore-util = { path = "../firecore-util" }
+firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util", features = ["hash"] }
+# firecore-util = { path = "../firecore-util", default-features = false, features = ["hash"] }
 
-firecore-pokedex-lib = { git = "https://github.com/DoNotDoughnut/firecore-pokedex-lib" }
-#firecore-pokedex-lib = { path = "../firecore-pokedex-lib" }
-
-### Serialization
+firecore-pokedex-lib = { git = "https://github.com/DoNotDoughnut/firecore-pokedex", package = "firecore-pokedex-lib" }
+# firecore-pokedex-lib = { path = "../firecore-pokedex/lib" }
 
 serde = { version = "1.0", features = ["derive"] }
-
-### Collections
-
-ahash = { version = "0.7", features = ["serde"] }

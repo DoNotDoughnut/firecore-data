@@ -27,6 +27,6 @@ miniquad-cookie = { git = "https://github.com/DoNotDoughnut/miniquad-cookie" }
 [workspace]
 members = [
     "configuration",
-    "saves",
+    "player",
     "storage"
 ]

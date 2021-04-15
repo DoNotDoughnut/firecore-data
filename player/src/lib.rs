@@ -1,7 +1,9 @@
 use firecore_pokedex_lib::pokemon::party::PokemonParty;
-use firecore_util::TinyStr16;
 use serde::{Deserialize, Serialize};
-use firecore_util::{GlobalPosition, Location, Position, Coordinate};
+use firecore_util::{
+	GlobalPosition, Location, Position, Coordinate,
+	tinystr::TinyStr16,
+};
 
 use world::WorldStatus;
 
