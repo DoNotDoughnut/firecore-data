@@ -1,8 +1,13 @@
-use firecore_pokedex::pokemon::party::PokemonParty;
+use firecore_pokedex::item::StackSize;
+use firecore_pokedex::{
+	item::{ItemId, SavedItemStack},
+	pokemon::party::PokemonParty,
+};
 use serde::{Deserialize, Serialize};
 use firecore_util::{
-	GlobalPosition, Location, Position, Coordinate,
+	GlobalPosition, Location, Position, Coordinate, Direction,
 	tinystr::TinyStr16,
+	hash::HashMap,
 };
 
 use world::WorldStatus;
@@ -26,6 +31,9 @@ pub struct PlayerSave {
 	pub party: PokemonParty,
 
 	#[serde(default)]
+	pub items: HashMap<ItemId, StackSize>,
+
+	#[serde(default)]
 	pub worth: usize,
 
 	#[serde(default)]
@@ -45,6 +53,37 @@ impl PlayerSave {
 	pub fn has_battled(&self, map: &String, npc: &u8) -> bool {
 		self.world_status.map_data.get(map).map(|map| map.battled.contains(npc)).unwrap_or(false)
 	}
+
+	pub fn add_item(&mut self, stack: SavedItemStack) -> bool {
+		if let Some(item) = firecore_pokedex::itemdex().get(&stack.item) {
+			if let Some(count) = self.items.get_mut(&stack.item) {
+				if *count + stack.count > item.stack_size {
+					false
+				} else {
+					*count += stack.count;
+					true
+				}
+			} else {
+				self.items.insert(stack.item, stack.count);
+				true
+			}
+		} else {
+			false
+		}
+	}
+
+	pub fn use_item(&mut self, id: &ItemId) -> bool {
+		if let Some(count) = self.items.get_mut(id) {
+			if *count > 0 {
+				*count -= 1;
+				true
+			} else {
+				false
+			}
+		} else {
+			false
+		}
+	}
 	
 }
 
@@ -54,6 +93,7 @@ impl Default for PlayerSave {
 			name: default_name(),
 			party: PokemonParty::default(),
 			location: default_location(),
+			items: HashMap::new(),
 		    worth: 0,
 		    world_status: WorldStatus::default(),
 		}
@@ -75,6 +115,7 @@ pub fn default_location() -> Location {
 					x: 6,
 					y: 6,
 				},
+				direction: Direction::Down,
 				..Default::default()
 			},
 			..Default::default()
