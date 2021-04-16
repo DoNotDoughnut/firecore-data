@@ -1,6 +1,6 @@
 use firecore_pokedex::item::StackSize;
 use firecore_pokedex::{
-	item::{ItemId, SavedItemStack},
+	item::{ItemId, ItemStack},
 	pokemon::party::PokemonParty,
 };
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,7 @@ pub use list::PlayerSaves;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerSave {
 
+	#[serde(default = "default_name")]
 	pub name: String,
 
 	#[serde(default = "default_location")]
@@ -54,9 +55,9 @@ impl PlayerSave {
 		self.world_status.map_data.get(map).map(|map| map.battled.contains(npc)).unwrap_or(false)
 	}
 
-	pub fn add_item(&mut self, stack: SavedItemStack) -> bool {
-		if let Some(item) = firecore_pokedex::itemdex().get(&stack.item) {
-			if let Some(count) = self.items.get_mut(&stack.item) {
+	pub fn add_item(&mut self, stack: ItemStack) -> bool {
+		if let Some(item) = firecore_pokedex::itemdex().get(&stack.id) {
+			if let Some(count) = self.items.get_mut(&stack.id) {
 				if *count + stack.count > item.stack_size {
 					false
 				} else {
@@ -64,7 +65,7 @@ impl PlayerSave {
 					true
 				}
 			} else {
-				self.items.insert(stack.item, stack.count);
+				self.items.insert(stack.id, stack.count);
 				true
 			}
 		} else {
